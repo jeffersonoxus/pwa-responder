@@ -8,6 +8,7 @@ import { sincronizarTudo, isOnline, registerConnectionListeners } from '@/lib/sy
 import { Calendar, MapPin, ChevronRight, CheckCircle, Clock, Wifi, WifiOff, RefreshCw, LogOut, AlertCircle } from 'lucide-react';
 import SyncButton from '@/components/SyncButton';
 import OfflineStatus from '@/components/OfflineStatus';
+import InstallButton from '@/components/InstallButton';
 
 export default function AcoesPage() {
   const router = useRouter();
@@ -77,16 +78,16 @@ export default function AcoesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-purple-50">
+        <div className="w-12 h-12 border-b-2 border-purple-600 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-purple-50 pb-24">
+    <div className="min-h-screen pb-24 bg-purple-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 py-5 sticky top-0 z-10 shadow-sm">
+      <div className="sticky top-0 z-10 px-4 py-5 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-800">Olá, {usuario?.nome}! 👋</h1>
@@ -96,7 +97,7 @@ export default function AcoesPage() {
           </div>
           <button
             onClick={handleLogout}
-            className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition"
+            className="p-2 text-gray-500 transition rounded-full hover:bg-gray-100"
           >
             <LogOut size={20} />
           </button>
@@ -106,7 +107,7 @@ export default function AcoesPage() {
         {usuario?.setores && usuario.setores.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-3">
             {usuario.setores.map(setor => (
-              <span key={setor.id} className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+              <span key={setor.id} className="px-2 py-1 text-xs text-purple-700 bg-purple-100 rounded-full">
                 🏢 {setor.nome}
               </span>
             ))}
@@ -134,54 +135,56 @@ export default function AcoesPage() {
             <div
               key={acao.id}
               onClick={() => router.push(`/responder/${acao.id}`)}
-              className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 active:scale-98 transition cursor-pointer hover:shadow-md"
+              className="p-4 transition bg-white border border-gray-100 shadow-sm cursor-pointer rounded-2xl active:scale-98 hover:shadow-md"
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-800">{acao.nome}</h3>
                   {acao.local && (
-                    <p className="text-gray-500 text-sm flex items-center gap-1 mt-1">
+                    <p className="flex items-center gap-1 mt-1 text-sm text-gray-500">
                       <MapPin size={14} />
                       {acao.local}
                     </p>
                   )}
                 </div>
-                <div className="bg-yellow-100 px-2 py-1 rounded-full flex items-center gap-1">
+                <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 rounded-full">
                   <Clock size={12} className="text-yellow-600" />
                   <span className="text-xs font-medium text-yellow-600">Pendente</span>
                 </div>
               </div>
               
               {acao.data_inicio && (
-                <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                <p className="flex items-center gap-1 mt-2 text-xs text-gray-400">
                   <Calendar size={12} />
                   {new Date(acao.data_inicio).toLocaleDateString('pt-BR')}
                 </p>
               )}
               
-              <div className="mt-3 flex items-center justify-end text-purple-600 text-sm font-medium">
+              <div className="flex items-center justify-end mt-3 text-sm font-medium text-purple-600">
                 Responder
                 <ChevronRight size={16} className="ml-1" />
               </div>
             </div>
           ))
         ) : (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="py-12 text-center">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full">
               <CheckCircle size={28} className="text-green-600" />
             </div>
-            <p className="text-gray-500 font-medium">Nenhuma ação pendente!</p>
-            <p className="text-sm text-gray-400 mt-1">Todas as ações foram respondidas</p>
+            <p className="font-medium text-gray-500">Nenhuma ação pendente!</p>
+            <p className="mt-1 text-sm text-gray-400">Todas as ações foram respondidas</p>
             {totalAcoes > 0 && (
-              <p className="text-xs text-gray-400 mt-2">Total de ações realizadas: {totalAcoes}</p>
+              <p className="mt-2 text-xs text-gray-400">Total de ações realizadas: {totalAcoes}</p>
             )}
           </div>
         )}
       </div>
+
+      <InstallButton />
       
       {/* Dica offline */}
       {!online && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white text-xs text-center py-2 px-4">
+        <div className="fixed bottom-0 left-0 right-0 px-4 py-2 text-xs text-center text-white bg-gray-800">
           <AlertCircle size={14} className="inline mr-1" />
           Modo offline - As respostas serão salvas e sincronizadas quando houver internet
         </div>
