@@ -1,11 +1,11 @@
-// app/responder/[id]/page.tsx (versão corrigida)
+// app/responder/[id]/page.tsx (versão simples que funciona)
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getAcaoOffline, salvarRespostaOffline, RespostaOffline, getUsuarioOffline, AcaoOffline, ParametroExtra } from '@/lib/db';
 import { isOnline } from '@/lib/sync';
-import { Calendar, MapPin, Truck, Users, CheckCircle, XCircle, Clock, RefreshCw, AlertCircle, Send, ArrowLeft, Home, WifiOff, X } from 'lucide-react';
+import { Calendar, MapPin, Truck, Users, CheckCircle, XCircle, Clock, RefreshCw, AlertCircle, Send, ArrowLeft, Home, WifiOff } from 'lucide-react';
 
 const STATUS_OPCOES = [
   { value: 'Realizada', label: '✅ Realizada', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
@@ -27,9 +27,7 @@ export default function ResponderPage() {
   const [statusSelecionado, setStatusSelecionado] = useState<string>('');
   const [observacoes, setObservacoes] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
-  const [online] = useState(isOnline());
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState({ title: '', message: '' });
+  const online = isOnline();
 
   useEffect(() => {
     const carregarAcao = async () => {
@@ -196,21 +194,8 @@ export default function ResponderPage() {
       await salvarAcoesOffline([acaoAtualizada]);
     }
     
-    // Mostrar modal de sucesso em vez de redirecionar
-    setSuccessMessage({
-      title: statusSelecionado === 'Realizada' ? '✅ Ação Realizada!' :
-              statusSelecionado === 'Realizada Parcialmente' ? '⚠️ Ação Realizada Parcialmente' :
-              statusSelecionado === 'Cancelada' ? '❌ Ação Cancelada' :
-              '🔄 Ação Reagendada',
-      message: !online ? 'Resposta salva localmente. Sincronize quando tiver internet.' : 'Resposta salva com sucesso!'
-    });
-    setShowSuccessModal(true);
-    setSubmitting(false);
-  };
-
-  const handleCloseModal = () => {
-    setShowSuccessModal(false);
-    router.push('/acoes');
+    // Redirecionar para página de sucesso
+    router.push(`/responder/sucesso?acao=${encodeURIComponent(acao?.nome || '')}&status=${statusSelecionado}&offline=${!online}`);
   };
 
   const steps = [
@@ -442,48 +427,6 @@ export default function ResponderPage() {
           </div>
         )}
       </div>
-
-      {/* Modal de Sucesso - sem redirecionamento! */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="w-full max-w-md p-6 text-center duration-200 bg-white rounded-2xl animate-in fade-in zoom-in">
-            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-            
-            <h2 className="mb-2 text-xl font-bold text-gray-800">{successMessage.title}</h2>
-            <p className="mb-6 text-gray-600">{successMessage.message}</p>
-            
-            {!online && (
-              <div className="flex items-center justify-center gap-2 p-3 mb-6 bg-yellow-50 rounded-xl">
-                <WifiOff size={18} className="text-yellow-600" />
-                <p className="text-sm text-yellow-700">Resposta salva localmente. Sincronize quando tiver internet.</p>
-              </div>
-            )}
-            
-            <button
-              onClick={handleCloseModal}
-              className="w-full py-3 font-medium text-white transition bg-purple-600 rounded-xl hover:bg-purple-700"
-            >
-              Voltar para Ações
-            </button>
-          </div>
-        </div>
-      )}
-
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes zoom-in {
-          from { transform: scale(0.95); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-        .animate-in {
-          animation: fade-in 0.2s ease-out, zoom-in 0.2s ease-out;
-        }
-      `}</style>
     </div>
   );
 }
