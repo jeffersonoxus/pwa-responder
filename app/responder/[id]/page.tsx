@@ -1,11 +1,11 @@
-// app/responder/[id]/page.tsx
+// app/responder/[id]/page.tsx (versão corrigida)
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getAcaoOffline, salvarRespostaOffline, RespostaOffline, getUsuarioOffline, AcaoOffline, ParametroExtra } from '@/lib/db';
 import { isOnline } from '@/lib/sync';
-import { Calendar, MapPin, Truck, Users, CheckCircle, XCircle, Clock, RefreshCw, AlertCircle, Send, ArrowLeft, Home, WifiOff } from 'lucide-react';
+import { Calendar, MapPin, Truck, Users, CheckCircle, XCircle, Clock, RefreshCw, AlertCircle, Send, ArrowLeft, Home, WifiOff, X } from 'lucide-react';
 
 const STATUS_OPCOES = [
   { value: 'Realizada', label: '✅ Realizada', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
@@ -28,6 +28,8 @@ export default function ResponderPage() {
   const [observacoes, setObservacoes] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
   const [online] = useState(isOnline());
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState({ title: '', message: '' });
 
   useEffect(() => {
     const carregarAcao = async () => {
@@ -85,7 +87,7 @@ export default function ResponderPage() {
       case 'boolean':
         return (
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">{param.label}</label>
+            <label className="block mb-2 text-sm font-semibold text-gray-700">{param.label}</label>
             <div className="flex gap-3">
               <button
                 type="button"
@@ -116,7 +118,7 @@ export default function ResponderPage() {
             <select
               value={valor}
               onChange={(e) => atualizarValor(e.target.value)}
-              className="w-full p-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+              className="w-full p-4 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               <option value="">Selecione uma opção...</option>
               {param.opcoes?.map(op => (
@@ -130,10 +132,10 @@ export default function ResponderPage() {
         const valoresSelecionados = Array.isArray(valor) ? valor : [];
         return (
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">{param.label}</label>
+            <label className="block mb-2 text-sm font-semibold text-gray-700">{param.label}</label>
             <div className="space-y-2">
               {param.opcoes?.map(op => (
-                <label key={op} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-pointer">
+                <label key={op} className="flex items-center gap-3 p-3 cursor-pointer bg-gray-50 rounded-xl">
                   <input
                     type="checkbox"
                     checked={valoresSelecionados.includes(op)}
@@ -144,7 +146,7 @@ export default function ResponderPage() {
                         atualizarValor(valoresSelecionados.filter(v => v !== op));
                       }
                     }}
-                    className="w-5 h-5 rounded border-gray-300 text-purple-500"
+                    className="w-5 h-5 text-purple-500 border-gray-300 rounded"
                   />
                   <span>{op}</span>
                 </label>
@@ -189,12 +191,26 @@ export default function ResponderPage() {
     
     // Atualizar status local da ação
     if (acao) {
-      const acaoAtualizada = { ...acao, status: statusSelecionado };
       const { salvarAcoesOffline } = await import('@/lib/db');
+      const acaoAtualizada = { ...acao, status: statusSelecionado };
       await salvarAcoesOffline([acaoAtualizada]);
     }
     
-    router.push(`/responder/sucesso?acao=${encodeURIComponent(acao?.nome || '')}&status=${statusSelecionado}&offline=${!online}`);
+    // Mostrar modal de sucesso em vez de redirecionar
+    setSuccessMessage({
+      title: statusSelecionado === 'Realizada' ? '✅ Ação Realizada!' :
+              statusSelecionado === 'Realizada Parcialmente' ? '⚠️ Ação Realizada Parcialmente' :
+              statusSelecionado === 'Cancelada' ? '❌ Ação Cancelada' :
+              '🔄 Ação Reagendada',
+      message: !online ? 'Resposta salva localmente. Sincronize quando tiver internet.' : 'Resposta salva com sucesso!'
+    });
+    setShowSuccessModal(true);
+    setSubmitting(false);
+  };
+
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+    router.push('/acoes');
   };
 
   const steps = [
@@ -205,20 +221,20 @@ export default function ResponderPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-purple-50">
+        <div className="w-12 h-12 border-b-2 border-purple-600 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (error || !acao) {
     return (
-      <div className="min-h-screen bg-purple-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md text-center">
-          <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Erro</h2>
-          <p className="text-gray-600 mb-4">{error || 'Ação não encontrada'}</p>
-          <button onClick={() => router.push('/acoes')} className="bg-purple-600 text-white px-6 py-3 rounded-xl">
+      <div className="flex items-center justify-center min-h-screen p-6 bg-purple-50">
+        <div className="max-w-md p-8 text-center bg-white shadow-xl rounded-3xl">
+          <XCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
+          <h2 className="mb-2 text-2xl font-bold text-gray-800">Erro</h2>
+          <p className="mb-4 text-gray-600">{error || 'Ação não encontrada'}</p>
+          <button onClick={() => router.push('/acoes')} className="px-6 py-3 text-white bg-purple-600 rounded-xl">
             Voltar
           </button>
         </div>
@@ -229,10 +245,10 @@ export default function ResponderPage() {
   return (
     <div className="min-h-screen bg-purple-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm px-4 py-4">
+      <div className="sticky top-0 z-10 px-4 py-4 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full">
+            <button onClick={() => router.back()} className="p-2 rounded-full hover:bg-gray-100">
               <ArrowLeft size={20} className="text-gray-600" />
             </button>
             <div>
@@ -240,14 +256,14 @@ export default function ResponderPage() {
               <p className="text-xs text-gray-500">Preencha as informações</p>
             </div>
           </div>
-          <button onClick={() => router.push('/acoes')} className="p-2 hover:bg-gray-100 rounded-full">
+          <button onClick={() => router.push('/acoes')} className="p-2 rounded-full hover:bg-gray-100">
             <Home size={20} className="text-gray-600" />
           </button>
         </div>
         
         {/* Status offline */}
         {!online && (
-          <div className="mt-2 flex items-center gap-1 text-xs text-amber-600 bg-amber-50 p-2 rounded-lg">
+          <div className="flex items-center gap-1 p-2 mt-2 text-xs rounded-lg text-amber-600 bg-amber-50">
             <WifiOff size={14} />
             Modo offline - Resposta será salva localmente
           </div>
@@ -255,14 +271,14 @@ export default function ResponderPage() {
       </div>
       
       {/* Steps */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3">
+      <div className="px-4 py-3 bg-white border-b border-gray-100">
         <div className="flex items-center gap-2">
           {steps.map((step, index) => {
             const StepIcon = step.icon;
             const isActive = index === currentStep;
             const isCompleted = index < currentStep;
             return (
-              <div key={index} className="flex-1 flex items-center gap-2">
+              <div key={index} className="flex items-center flex-1 gap-2">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center transition ${
                   isActive ? 'bg-purple-600 text-white' : isCompleted ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
                 }`}>
@@ -282,13 +298,13 @@ export default function ResponderPage() {
         </div>
       </div>
       
-      <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
+      <div className="max-w-2xl px-4 py-6 pb-24 mx-auto">
         {/* Step 0: Informações */}
         {currentStep === 0 && (
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-gray-800 mb-2">{acao.nome}</h2>
-              {acao.descricao && <p className="text-gray-600 mb-4">{acao.descricao}</p>}
+            <div className="p-6 bg-white shadow-sm rounded-2xl">
+              <h2 className="mb-2 text-xl font-bold text-gray-800">{acao.nome}</h2>
+              {acao.descricao && <p className="mb-4 text-gray-600">{acao.descricao}</p>}
               
               <div className="space-y-3">
                 {acao.local && (
@@ -316,7 +332,7 @@ export default function ResponderPage() {
                       <span className="font-medium">Participantes:</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {acao.pessoas.map((pessoa, idx) => (
-                          <span key={idx} className="text-xs bg-gray-100 px-2 py-1 rounded-full">{pessoa}</span>
+                          <span key={idx} className="px-2 py-1 text-xs bg-gray-100 rounded-full">{pessoa}</span>
                         ))}
                       </div>
                     </div>
@@ -325,7 +341,7 @@ export default function ResponderPage() {
               </div>
             </div>
             
-            <button onClick={() => setCurrentStep(1)} className="w-full bg-purple-600 text-white py-4 rounded-xl font-bold">
+            <button onClick={() => setCurrentStep(1)} className="w-full py-4 font-bold text-white bg-purple-600 rounded-xl">
               Continuar
             </button>
           </div>
@@ -334,9 +350,9 @@ export default function ResponderPage() {
         {/* Step 1: Perguntas */}
         {currentStep === 1 && (
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-gray-800 mb-2">Informações da Visita</h2>
-              <p className="text-gray-500 text-sm mb-6">Responda as perguntas abaixo</p>
+            <div className="p-6 bg-white shadow-sm rounded-2xl">
+              <h2 className="mb-2 text-xl font-bold text-gray-800">Informações da Visita</h2>
+              <p className="mb-6 text-sm text-gray-500">Responda as perguntas abaixo</p>
               
               <div className="space-y-6">
                 {acao.parametros_extras?.map((param) => (
@@ -357,10 +373,10 @@ export default function ResponderPage() {
             </div>
             
             <div className="flex gap-3">
-              <button onClick={() => setCurrentStep(0)} className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-xl font-medium">
+              <button onClick={() => setCurrentStep(0)} className="flex-1 py-4 font-medium text-gray-700 bg-gray-100 rounded-xl">
                 Voltar
               </button>
-              <button onClick={() => setCurrentStep(2)} className="flex-1 bg-purple-600 text-white py-4 rounded-xl font-bold">
+              <button onClick={() => setCurrentStep(2)} className="flex-1 py-4 font-bold text-white bg-purple-600 rounded-xl">
                 Próximo
               </button>
             </div>
@@ -370,11 +386,11 @@ export default function ResponderPage() {
         {/* Step 2: Status */}
         {currentStep === 2 && (
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-gray-800 mb-2">Resultado da Ação</h2>
-              <p className="text-gray-500 text-sm mb-6">Selecione o status final</p>
+            <div className="p-6 bg-white shadow-sm rounded-2xl">
+              <h2 className="mb-2 text-xl font-bold text-gray-800">Resultado da Ação</h2>
+              <p className="mb-6 text-sm text-gray-500">Selecione o status final</p>
               
-              <div className="space-y-3 mb-6">
+              <div className="mb-6 space-y-3">
                 {STATUS_OPCOES.map((status) => {
                   const StatusIcon = status.icon;
                   const isSelected = statusSelecionado === status.value;
@@ -405,16 +421,16 @@ export default function ResponderPage() {
             </div>
             
             <div className="flex gap-3">
-              <button onClick={() => setCurrentStep(1)} className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-xl font-medium">
+              <button onClick={() => setCurrentStep(1)} className="flex-1 py-4 font-medium text-gray-700 bg-gray-100 rounded-xl">
                 Voltar
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={!statusSelecionado || submitting}
-                className="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex items-center justify-center flex-1 gap-2 py-4 font-bold text-white bg-green-600 rounded-xl disabled:opacity-50"
               >
                 {submitting ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <div className="w-5 h-5 border-b-2 border-white rounded-full animate-spin"></div>
                 ) : (
                   <>
                     <Send size={20} />
@@ -426,6 +442,48 @@ export default function ResponderPage() {
           </div>
         )}
       </div>
+
+      {/* Modal de Sucesso - sem redirecionamento! */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="w-full max-w-md p-6 text-center duration-200 bg-white rounded-2xl animate-in fade-in zoom-in">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full">
+              <CheckCircle className="w-8 h-8 text-green-600" />
+            </div>
+            
+            <h2 className="mb-2 text-xl font-bold text-gray-800">{successMessage.title}</h2>
+            <p className="mb-6 text-gray-600">{successMessage.message}</p>
+            
+            {!online && (
+              <div className="flex items-center justify-center gap-2 p-3 mb-6 bg-yellow-50 rounded-xl">
+                <WifiOff size={18} className="text-yellow-600" />
+                <p className="text-sm text-yellow-700">Resposta salva localmente. Sincronize quando tiver internet.</p>
+              </div>
+            )}
+            
+            <button
+              onClick={handleCloseModal}
+              className="w-full py-3 font-medium text-white transition bg-purple-600 rounded-xl hover:bg-purple-700"
+            >
+              Voltar para Ações
+            </button>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes zoom-in {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .animate-in {
+          animation: fade-in 0.2s ease-out, zoom-in 0.2s ease-out;
+        }
+      `}</style>
     </div>
   );
 }
