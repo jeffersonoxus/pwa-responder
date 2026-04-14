@@ -1,6 +1,6 @@
 
 {
-  "name": "Responder Ações",
+  "name": "Responder Ações - Diretoria de Ensino",
   "short_name": "Ações",
   "description": "Responda ações da Diretoria de Ensino offline",
   "start_url": "/",
@@ -20,6 +20,13 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-1.png",
+      "sizes": "1080x1920",
+      "type": "image/png"
     }
   ]
 }
