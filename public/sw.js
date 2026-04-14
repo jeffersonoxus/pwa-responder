@@ -1,22 +1,16 @@
-const CACHE_NAME = 'responder-acoes-v1';
+const CACHE_NAME = 'pwa-responder-v1';
 const urlsToCache = [
   '/',
   '/acoes',
   '/login',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/manifest.json'
 ];
 
 self.addEventListener('install', event => {
-  console.log('Service Worker instalando...');
+  console.log('Service Worker instalado');
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Cache aberto');
-        return cache.addAll(urlsToCache);
-      })
-      .catch(err => console.log('Erro no cache:', err))
+      .then(cache => cache.addAll(urlsToCache))
   );
   self.skipWaiting();
 });
@@ -28,7 +22,6 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cache => {
           if (cache !== CACHE_NAME) {
-            console.log('Removendo cache antigo:', cache);
             return caches.delete(cache);
           }
         })
@@ -40,23 +33,7 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request)
-          .then(response => {
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-            return response;
-          });
-      })
+    fetch(event.request)
+      .catch(() => caches.match(event.request))
   );
 });

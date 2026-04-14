@@ -1,4 +1,4 @@
-// next.config.js (renomeie de next.config.ts para next.config.js)
+// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -7,16 +7,16 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Configurações para PWA
+  // Desabilitar geração estática para rotas dinâmicas
+  generateBuildId: async () => {
+    return 'build-' + Date.now();
+  },
+  // Configurar headers para evitar cache de arquivos JS
   async headers() {
     return [
       {
-        source: '/sw.js',
+        source: '/_next/static/chunks/:path*',
         headers: [
-          {
-            key: 'Content-Type',
-            value: 'application/javascript',
-          },
           {
             key: 'Cache-Control',
             value: 'no-cache, no-store, must-revalidate',
@@ -24,11 +24,24 @@ const nextConfig = {
         ],
       },
       {
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Content-Type',
+            value: 'application/javascript',
+          },
+        ],
+      },
+      {
         source: '/manifest.json',
         headers: [
           {
-            key: 'Content-Type',
-            value: 'application/json',
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
           },
         ],
       },
