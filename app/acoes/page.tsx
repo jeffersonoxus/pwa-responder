@@ -268,7 +268,7 @@ function ResponderModal({ acao, onClose, onSuccess }: { acao: AcaoOffline | null
         </div>
 
         <div className="p-4 pb-24">
-          {/* Step 0: Informações */}
+          {/* Step 0: Informações... */}
           {currentStep === 0 && (
             <div className="space-y-6">
               <div className="p-6 bg-gray-50 rounded-2xl">
@@ -632,4 +632,4 @@ function XCircle(props: any) {
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   );
-}
+}// versão definitiva
