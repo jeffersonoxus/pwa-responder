@@ -1,16 +1,13 @@
-// public/sw.js - versão melhorada
-const CACHE_NAME = 'responder-acoes-v2';
+const CACHE_NAME = 'responder-acoes-v1';
 const urlsToCache = [
   '/',
   '/acoes',
   '/login',
   '/manifest.json',
   '/icon-192.png',
-  '/icon-512.png',
-  '/favicon.ico'
+  '/icon-512.png'
 ];
 
-// Instalação
 self.addEventListener('install', event => {
   console.log('Service Worker instalando...');
   event.waitUntil(
@@ -24,7 +21,6 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Ativação
 self.addEventListener('activate', event => {
   console.log('Service Worker ativado');
   event.waitUntil(
@@ -42,7 +38,6 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)

@@ -1,4 +1,4 @@
-// app/layout.tsx - adicionar registro do SW
+// app/layout.tsx
 'use client';
 
 import { Inter } from 'next/font/google';
@@ -15,22 +15,16 @@ export default function RootLayout({
   useEffect(() => {
     // Registrar Service Worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('Service Worker registrado:', registration);
-        })
-        .catch(error => {
-          console.log('Falha no registro do SW:', error);
-        });
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('Service Worker registrado com sucesso:', registration.scope);
+          })
+          .catch(error => {
+            console.log('Falha ao registrar Service Worker:', error);
+          });
+      });
     }
-
-    // Detectar se pode instalar
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      console.log('App pode ser instalado!');
-      // Guardar o evento para usar depois
-      (window as any).deferredPrompt = e;
-    });
   }, []);
 
   return (
@@ -42,22 +36,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Ações" />
         <meta name="theme-color" content="#7C3AED" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
       <body className={inter.className}>
         {children}
-        
-        {/* Botão de instalação para navegadores que suportam */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            let deferredPrompt;
-            window.addEventListener('beforeinstallprompt', (e) => {
-              e.preventDefault();
-              deferredPrompt = e;
-              console.log('App instalável detectado');
-            });
-          `
-        }} />
       </body>
     </html>
   );

@@ -3,7 +3,7 @@
   "name": "Responder Ações - Diretoria de Ensino",
   "short_name": "Ações",
   "description": "Responda ações da Diretoria de Ensino offline",
-  "start_url": "/",
+  "start_url": "/acoes",
   "display": "standalone",
   "theme_color": "#7C3AED",
   "background_color": "#ffffff",

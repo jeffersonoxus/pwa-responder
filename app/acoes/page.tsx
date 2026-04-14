@@ -8,6 +8,7 @@ import { sincronizarTudo, isOnline, registerConnectionListeners } from '@/lib/sy
 import { Calendar, MapPin, ChevronRight, CheckCircle, Clock, Wifi, WifiOff, RefreshCw, LogOut, AlertCircle, Send, ArrowLeft, Home, X, Truck, Users } from 'lucide-react';
 import SyncButton from '@/components/SyncButton';
 import OfflineStatus from '@/components/OfflineStatus';
+import InstallButton from '@/components/InstallButton';
 
 const STATUS_OPCOES = [
   { value: 'Realizada', label: '✅ Realizada', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
@@ -619,6 +620,9 @@ export default function AcoesPage() {
           onSuccess={handleModalSuccess}
         />
       )}
+
+      {}/* Botão de instalação */
+      <InstallButton />
     </div>
   );
 }
