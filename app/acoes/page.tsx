@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getUsuarioOffline, getAcoesPendentesOffline, getAcoesOffline, AcaoOffline, ParametroExtra, salvarRespostaOffline, RespostaOffline, salvarAcoesOffline } from '@/lib/db';
 import { sincronizarTudo, isOnline, registerConnectionListeners } from '@/lib/sync';
-import { Calendar, MapPin, ChevronRight, CheckCircle, Clock, Wifi, WifiOff, RefreshCw, LogOut, AlertCircle, Send, ArrowLeft, Home, X, Truck, Users } from 'lucide-react';
+import { Calendar, MapPin, ChevronRight, CheckCircle, Clock, Wifi, WifiOff, RefreshCw, LogOut, AlertCircle, Send, XCircle, Home, X, Truck, Users } from 'lucide-react';
 import SyncButton from '@/components/SyncButton';
 import OfflineStatus from '@/components/OfflineStatus';
 import InstallButton from '@/components/InstallButton';
@@ -509,7 +509,7 @@ export default function AcoesPage() {
   }
 
   return (
-    <div className="min-h-screen pb-24 bg-purple-50">
+    <div className="min-h-screen bg-purple-50">
       {/* Header */}
       <div className="sticky top-0 z-10 px-4 py-5 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between">
@@ -553,7 +553,7 @@ export default function AcoesPage() {
       </div>
       
       {/* Lista de Ações */}
-      <div className="px-4 py-4 space-y-3">
+      <div className="px-4 py-4 pb-32 space-y-3"> {/* pb-32 para dar espaço para o botão */}
         {acoesPendentes.length > 0 ? (
           acoesPendentes.map((acao) => (
             <div
@@ -606,7 +606,7 @@ export default function AcoesPage() {
       
       {/* Dica offline */}
       {!online && (
-        <div className="fixed bottom-0 left-0 right-0 px-4 py-2 text-xs text-center text-white bg-gray-800">
+        <div className="fixed bottom-0 left-0 right-0 z-40 px-4 py-2 text-xs text-center text-white bg-gray-800">
           <AlertCircle size={14} className="inline mr-1" />
           Modo offline - As respostas serão salvas e sincronizadas quando houver internet
         </div>
@@ -621,19 +621,8 @@ export default function AcoesPage() {
         />
       )}
 
-      {}/* Botão de instalação */
+      {/* Botão de instalação - dentro da div principal */}
       <InstallButton />
     </div>
-  );
-}
-
-// Componente XCircle que estava faltando
-function XCircle(props: any) {
-  return (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
   );
 }// versão definitiva
